@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的后台</title>
+    <script src="https://cdn.bootcss.com/jquery/1.12.0/jquery.js"></script>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <script src="/layui/layui.js " type="text/javascript"></script>
+</head>
+<body>
+
+
+    <div th:replace="adminNav :: html"></div>
+    <div th:replace="head :: html"></div>
+
+    <div class="layui-body" id="content_body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend>后台文章列表</legend>
+                <div class="layui-field-box">
+                    <!-- 内容主体区域 -->
+                    <div style="padding: 15px;">
+                        <div class="layui-card" th:each="article:${articleList}" th:if="${articleList!=null}">
+                            <div class="layui-card-header userHeadParentElement"  th:text="${article.title}" th:onclick="showArticle([[${article.url}]]);"></div>
+                            <div class="layui-card-body">
+                                <div class="layui-row questionDetailTitle" th:text="${article.description}" th:onclick="showArticle([[${article.url}]]);"></div>
+                                <div class="layui-row questionAction">
+                                    <i class="layui-icon layui-icon-date item-margin"></i>&nbsp;&nbsp;<div th:text="${article.createTimeToString}"></div>&nbsp;&nbsp;
+                                    <div th:onclick="editArticle([[${article.id}]]);">
+                                        <i class="layui-icon layui-icon-edit"></i>&nbsp;&nbsp;编辑&nbsp;&nbsp;
+                                    </div>
+                                    <div th:onclick="deleteArticle([[${article.id}]]);">
+                                        <i class="layui-icon layui-icon-delete"></i>&nbsp;&nbsp;删除&nbsp;&nbsp;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <center>
+                            <div class="fenyeWrap">
+                                <div id="fenye"></div><div> 共 <span th:text="${page.total}"></span> 篇文章 </div>
+                            </div>
+                        </center>
+
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+
+    </div>
+
+</body>
+
+
+<script th:inline="javascript">
+    function showArticle(articleURL) {
+        window.open(articleURL);
+    }
+
+    function editArticle(articleID) {
+        window.location.href ="/adminArticle/toEditArticle?id=" + articleID;
+    }
+
+    function deleteArticle(articleID) {
+        layui.use(['layer'], function () {
+            var layer = layui.layer;
+
+            layer.open({
+                title: '警告'
+                ,content: '确定删除该篇文章吗？'
+                , btn: ['确定' , '取消']
+                , yes: function () {
+                    window.location.href ="/adminArticle/deleteArticle?id=" + articleID;
+                }
+                ,btn2: function(){
+                    layer.closeAll();
+                }
+            });
+        });
+    }
+
+    layui.use(['laypage'], function () {
+        var laypage = layui.laypage;
+
+        //分页
+        laypage.render({
+            elem: 'fenye',
+            count: [[${page.pages}]], //总条数
+            curr: [[${page.pageNum}]], //当前页
+            groups: 5, //连续显示分页数
+            limit: 1,
+            jump: function (obj, first) {
+                if (!first) {
+                    var search = window.location.search;
+                    var toPage = obj.curr;//得到了当前页，用于向服务端请求对应数据
+                    location.href = "/adminArticle/showArticleList/" + toPage+ search;
+                }
+            }
+        });
+
+    });
+
+</script>
+</html>

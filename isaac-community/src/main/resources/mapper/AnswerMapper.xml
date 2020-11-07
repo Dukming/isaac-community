@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dkm.isaaccommunity.dao.AnswerDao">
+<resultMap type="Answer" id="AnswerMap">
+    <id column="id" property="id"/>
+    <result column="content" property="content"/>
+    <result column="question_id" property="questionID"/>
+    <result column="createtime" property="createTime"/>
+    <result column="star" property="star"/>
+    <association property="user"  javaType="User">
+        <id column="user_id" property="id"/>
+        <result column="username" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="phone" property="phone"/>
+        <result column="createtime" property="createTime"/>
+        <result column="locked" property="locked"/>
+        <result column="salt" property="salt"/>
+        <result column="score" property="score"/>
+        <result column="role" property="role"/>
+        <result column="head_img_name" property="imgName"/>
+    </association>
+</resultMap>
+
+<insert id="insertAnswer" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO answer(content, question_id, user_id, createtime, star)
+        VALUES (#{answer.content}, #{answer.questionID}, #{answer.user.id}, #{answer.createTime}, #{answer.star})
+    </insert>
+
+<select id="getQuestionAllAnswers" resultMap="AnswerMap">
+        SELECT
+            R.*,
+            U.username,
+            U.head_img_name
+        FROM
+            answer  R
+        JOIN
+            user    U
+        ON
+            R.user_id = U.id
+        WHERE
+            R.question_id = #{pageInfo.id}
+        ORDER BY
+            star DESC, createtime DESC
+        LIMIT
+            #{pageInfo.start}, #{pageInfo.pageSize}
+    </select>
+
+<select id="getAnswer" resultMap="AnswerMap">
+        SELECT
+            R.*,
+            U.id,
+            U.username,
+            U.head_img_name
+        FROM
+            answer  R
+        JOIN
+            user    U
+        ON
+            R.user_id = U.id
+        WHERE
+          R.id = #{aid}
+    </select>
+
+<select id="getUserAnswers" resultMap="AnswerMap">
+       SELECT
+            R.*
+        FROM
+            answer  R
+        WHERE
+            R.user_id = #{pageInfo.userid}
+        ORDER BY
+            R.id DESC
+        LIMIT
+            #{pageInfo.start}, #{pageInfo.pageSize}
+    </select>
+
+<select id="getUserCollections" resultMap="AnswerMap">
+       SELECT
+            R.*,
+            UC.user_id AS uc_uid,
+            U.id,
+            U.username,
+            U.head_img_name
+        FROM
+            answer  R
+        LEFT JOIN
+            user_collection UC
+        ON
+            R.id = UC.answer_id
+        LEFT JOIN
+            user   U
+        ON
+            R.user_id = U.id
+        WHERE
+            UC.user_id = #{pageInfo.userid}
+        ORDER BY
+            R.id DESC
+        LIMIT
+            #{pageInfo.start}, #{pageInfo.pageSize}
+    </select>
+
+
+<select id="selectUserAnswerCount" resultType="int">
+        SELECT COUNT(R.id) FROM answer R WHERE user_id = #{userID}
+    </select>
+
+<update id="increaseStarsNum">
+        UPDATE answer SET star = star + 1 WHERE id = #{aid}
+    </update>
+
+<update id="decreaseStarsNum">
+        UPDATE answer SET star = star - 1 WHERE id = #{aid}
+    </update>
+
+<update id="updateAnswerContent">
+        UPDATE answer SET content = #{content} WHERE id = #{aid}
+    </update>
+
+<insert id="insertCollectAnswer">
+        INSERT INTO user_collection(user_id, answer_id, createtime) VALUES (#{uid}, #{aid}, #{createTime})
+    </insert>
+
+<delete id="deleteCollectAnswer">
+        DELETE FROM user_collection WHERE user_id = #{uid} AND answer_id = #{aid}
+    </delete>
+
+<select id="selectUserCollectionCount" resultType="int">
+        SELECT COUNT(R.id) FROM user_collection R WHERE user_id = #{userID}
+    </select>
+
+<select id="selectUserTheNewestAnswer" resultMap="AnswerMap">
+       SELECT
+          *
+        FROM
+          answer
+        WHERE
+          user_id = #{userID}
+        ORDER BY
+          id DESC
+        LIMIT 0,1
+    </select>
+
+</mapper>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的社区</title>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+</head>
+<body>
+<div th:replace="head :: html"></div>
+<!--热门问题相关信息-->
+<ul class="flow-default" id="myCollections"></ul>
+
+<script type="text/javascript">
+    //每次加载最新问题数量
+    var QUESTIONS_NUM = 10;
+
+    //加载热门问题、回答
+    layui.use('flow', function(){
+        var flow = layui.flow;
+
+        flow.load({
+            elem: '#myCollections'
+            ,done: function(page, next){
+                var lis = [];
+                $.get( '/answer/getUserCollection?page='+ page, function(res){
+                    layui.each(res.questions, function(index, item){
+                        lis.push(
+                            '<div class="layui-card">' +
+                                '<div class="layui-card-header userHeadParentElement" >' +
+                                    '<img src="' + item.hotuserheadimg + '" class="userSmallHead"/>' +
+                                    '<a class="userName">' + item.hotusername + '</a>' +
+                                '</div>' +
+                                '<div class="layui-card-body">' +
+                                    '<div class="layui-row questionDetailTitle" onclick="showQuestionDetail(' + item.id + ');">' +
+                                        item.title +
+                                    '</div>' +
+                                    '<div class="layui-row hotanwer" >' +
+                                        item.hotanswer +
+                                    '</div>' +
+                                    '<div class="layui-row questionAction">' +
+                                        '<button class="layui-btn layui-btn-sm starbtn"  onclick="star3(' + item.id + "," + item.hotanswerid + ');">' +
+                                            '<i class="layui-icon layui-icon-praise" id="' + item.hotanswerid +'stars3">&nbsp;&nbsp;' + item.hotstar + '</i>' +
+                                        '</button>' +
+                                        '<div onclick="cancelCollectionAnswer('+ item.hotanswerid +')"><i class="layui-icon layui-icon-rate-solid item-margin"></i>&nbsp;&nbsp;取消收藏</div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>'
+                        );
+                    });
+
+                    //设置分页信息
+                    next(lis.join(''), page < res.sum / QUESTIONS_NUM);
+                    //window.parent.resize(0);
+                });
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

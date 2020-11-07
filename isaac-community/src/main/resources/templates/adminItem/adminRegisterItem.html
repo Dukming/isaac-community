@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的后台</title>
+    <script src="https://cdn.bootcss.com/jquery/1.12.0/jquery.js"></script>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <script src="/layui/layui.js " type="text/javascript"></script>
+</head>
+
+<body>
+<div th:replace="adminNav :: html"></div>
+<div th:replace="head :: html"></div>
+
+<div class="layui-body" id="content_body">
+    <!-- 内容主体区域 -->
+    <div style="padding: 15px;">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>后台道具添加</legend>
+            <div class="layui-field-box">
+                <!-- 内容主体区域 -->
+                <div style="padding: 15px;">
+                    <div class="ctrlWrap">
+
+                        <form action="/adminItem/registItem" method="post" accept-charset="utf-8" class="layui-form" >
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">名称</label>
+                                <div class="layui-input-block">
+                                    <input style="width: 400px" type="text" name="name" required  lay-verify="required"  placeholder="请输入道具名称" autocomplete="off" class="layui-input"/>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">图标名</label>
+                                <div class="layui-input-block">
+                                    <input style="width: 400px" type="text" name="imgName" required  lay-verify="required"  placeholder="请输入图标名称" autocomplete="off" class="layui-input"/>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">类型</label>
+                                <div class="layui-input-block" style="width: 400px" >
+                                    <select name="typeName" lay-verify="required" >
+                                        <option value=""></option>
+                                        <option value="被动道具">被动道具</option>
+                                        <option value="主动道具">主动道具</option>
+                                        <option value="跟班">跟班</option>
+                                        <option value="饰品">饰品</option>
+                                        <option value="卡牌">卡牌</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item" pane="">
+                                <label class="layui-form-label">标签</label>
+                                <div class="layui-input-block">
+                                    <input type="checkbox" name="tagSelect"  th:each="tag:${tags}" th:if="${tags != null}" th:value="${tag.name}" th:title="${tag.name}" lay-skin="primary">
+                                </div>
+                                <div class="layui-input-block" style="display: none;">
+                                    <input type="checkbox" name="tagSelect" value="" title=""  checked>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item layui-form-text">
+                                <label class="layui-form-label">效果</label>
+                                <div class="layui-input-block">
+                                    <textarea style="width: 600px; height: 250px" id="desc" placeholder="请输入道具详细信息" name="description" class="layui-textarea"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button class="layui-btn" lay-submit lay-filter="formDemo">添加</button>
+                                    <a href="/adminItem/showAll" class="layui-btn"> 取消</a>
+                                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+</div>
+</body>
+
+<script th:inline="javascript">
+    //Demo
+    layui.use(['form'], function(){
+        var form = layui.form;
+
+
+
+    });
+
+</script>
+
+</html>

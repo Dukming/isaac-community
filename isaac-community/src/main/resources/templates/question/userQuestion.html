@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的社区</title>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+</head>
+<body>
+
+    <div th:replace="head :: html"></div>
+
+    <ul class="flow-default" id="user-questions"></ul>
+
+    <script type="text/javascript">
+        var QUESTIONS_NUM = 10;
+
+        //加载最新的问题
+        layui.use('flow', function(){
+            var flow = layui.flow;
+
+            flow.load({
+                elem: '#user-questions'
+                ,done: function(page, next){
+                    var lis = [];
+                    $.get( '/question/getUserQuestions?page=' + page, function(res){
+                        layui.each(res.questions, function(index, item){
+                            lis.push(
+                                '<div class="layui-card">' +
+                                    '<div class="layui-card-header userHeadParentElement">' +
+                                        '<div class="layui-row questionDetailTitle" onclick="showQuestionDetail(' + item.id + ');">' +
+                                            item.title +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<div class="layui-card-body">' +
+                                        '<div class="layui-row questionDetailText"  onclick="showQuestionDetail(' + item.id + ');">' +
+                                            showQuestionText(item.description) +
+                                        '</div>' +
+                                        '<div class="layui-row questionAction">' +
+                                            '<i class="iconfont icon-pinglun"></i>&nbsp;&nbsp;' + item.answersnum + "条回答" +
+                                            '<i class="layui-icon layui-icon-date item-margin"></i>&nbsp;&nbsp;' + timestampToTime(item.createTime) +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>'
+                            );
+                        });
+
+                        next(lis.join(''), page < res.sum / QUESTIONS_NUM);
+                        //window.parent.resize(2);
+                    });
+                }
+            });
+        });
+
+        /**
+         * 显示问题内容
+         */
+        function showQuestionText(text) {
+            if(isNullOrEmpty(text)){
+                return "";
+            }
+
+            if(text.length < 85){
+                return text;
+            }
+
+            return text.substr(0, 85) + " ... " + '<a href="#/" class="read-more">查看全文 &raquo;</a>';
+        }
+
+
+    </script>
+</body>
+</html>

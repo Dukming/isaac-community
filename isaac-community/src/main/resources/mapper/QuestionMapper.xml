@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dkm.isaaccommunity.dao.QuestionDao">
+    <resultMap type="Question" id="QuestionMap">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="createtime" property="createTime"/>
+        <result column="updatetime" property="updateTime"/>
+        <result column="img_name" property="imgName"/>
+        <association property="user"  javaType="User">
+            <id column="user_id" property="id"/>
+            <result column="username" property="userName"/>
+            <result column="password" property="password"/>
+            <result column="phone" property="phone"/>
+            <result column="createtime" property="createTime"/>
+            <result column="locked" property="locked"/>
+            <result column="salt" property="salt"/>
+            <result column="score" property="score"/>
+            <result column="role" property="role"/>
+            <result column="head_img_name" property="imgName"/>
+        </association>
+    </resultMap>
+
+    <insert id="insertQuestion" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO question(title, description, user_id, createtime, updatetime, img_name)
+        VALUES (#{question.title}, #{question.description}, #{question.user.id}, #{question.createTime}, #{question.updateTime}, #{question.imgName})
+    </insert>
+
+    <select id="getQuestionsList" resultMap="QuestionMap">
+        SELECT
+            Q.*,
+            U.username,
+            U.head_img_name
+        FROM
+            question  Q
+        JOIN
+            user U
+        ON
+            Q.user_id = U.id
+        WHERE
+            Q.id IN ( ${qids} )
+        ORDER BY
+            Q.id DESC
+    </select>
+
+    <select id="selectQuestionById" resultMap="QuestionMap">
+        SELECT * FROM question WHERE id = #{qid};
+    </select>
+
+    <select id="getUserQuestions" resultMap="QuestionMap">
+        SELECT
+            Q.*,
+            COUNT(R.id) AS answersnum
+        FROM
+            question  Q
+        LEFT JOIN
+            answer    R
+        ON
+            Q.id = R.question_id
+        WHERE
+            Q.user_id = #{pageInfo.userid}
+        GROUP BY
+            R.id
+        ORDER BY
+            R.id DESC
+        LIMIT
+            #{pageInfo.start}, #{pageInfo.pageSize}
+    </select>
+
+    <select id="selectUserQuestionCount" resultType="int">
+        SELECT COUNT(R.id) FROM question R WHERE user_id = #{userID}
+    </select>
+
+    <select id="selectQuestionAnswerCount" resultType="int">
+        SELECT COUNT(R.id) FROM answer R WHERE question_id = #{qid}
+    </select>
+
+    <insert id="insertAttentionQuestion">
+        INSERT INTO user_attention(user_id, question_id, createtime) VALUES (#{uid}, #{qid}, #{createTime})
+    </insert>
+
+    <select id="getUserAttentions" resultMap="QuestionMap">
+       SELECT
+            R.*,
+            UA.user_id AS ua_uid,
+            U.id,
+            U.username,
+            U.head_img_name
+        FROM
+            question  R
+        LEFT JOIN
+            user_attention UA
+        ON
+            R.id = UA.question_id
+        LEFT JOIN
+            user   U
+        ON
+            R.user_id = U.id
+        WHERE
+            UA.user_id = #{pageInfo.userid}
+        ORDER BY
+            R.id DESC
+        LIMIT
+            #{pageInfo.start}, #{pageInfo.pageSize}
+    </select>
+
+    <select id="selectUserAttentionCount" resultType="int">
+        SELECT COUNT(R.id) FROM user_attention R WHERE user_id = #{userID}
+    </select>
+
+    <delete id="deleteAttentionQuestion">
+        DELETE FROM user_attention WHERE user_id = #{uid} AND question_id = #{qid}
+    </delete>
+
+    <select id="selectUserTheNewestQuestion" resultMap="QuestionMap">
+       SELECT
+          *
+        FROM
+          question
+        WHERE
+          user_id = #{userID}
+        ORDER BY
+          id DESC
+        LIMIT 0,1
+    </select>
+
+</mapper>

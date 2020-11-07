@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的后台</title>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+</head>
+<body>
+
+    <div th:replace="head :: html"></div>
+    <ul class="flow-default" id="processedMSGList"></ul>
+
+    <script type="text/javascript">
+
+        var MSG_NUM = 10;
+
+        layui.use(['flow', 'layer'], function(){
+            var flow = layui.flow;
+            var layer = layui.layer;
+            var $ = layui.jquery;
+
+            flow.load({
+                elem: '#processedMSGList'
+                ,done: function(page, next){
+                    var lis = [];
+                    $.get( '/adminErrorMSG/getProcessedMSG?page='+page, function(res){
+                        layui.each(res.msgList, function(index, item){
+                            lis.push(
+                                '<div class="layui-card">' +
+                                    '<div class="layui-card-header userHeadParentElement" >' +
+                                        '<img src="' + item.user.imgAddr + '" class="userSmallHead"/>' +
+                                        '<a class="userName">' + item.user.userName + '</a>' +
+                                    '</div>' +
+                                    '<div class="layui-card-body">' +
+                                        '<div class="layui-row questionDetailTitle" >' +
+                                            item.content +
+                                        '</div>' +
+                                        '<div class="layui-row questionAction">' +
+                                            '<div onclick="rewardScore('+ item.user.id +')"><i class="layui-icon layui-icon-rate-solid item-margin"></i>&nbsp;&nbsp;奖励积分</div>' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>'
+                            );
+                        });
+
+                        //设置分页信息
+                        next(lis.join(''), page < res.sum / MSG_NUM);
+
+                    });
+                }
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>

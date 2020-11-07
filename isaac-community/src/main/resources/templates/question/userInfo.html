@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的社区</title>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <link rel="stylesheet" href="/css/questionIndex.css"/>
+</head>
+<body>
+
+    <div th:replace="nav :: html"></div>
+    <div th:replace="head :: html"></div>
+
+    <div class="layui-card" style="padding-top: 20px">
+        <div class="layui-container">
+            <div id="header" class="layui-row layui-col-space30">
+                <!--左侧内容区-->
+                <div class="layui-col-md8">
+                    <div class="layui-row layui-col-space10">
+                        <!--标志-->
+                        <div class="layui-col-md2">
+                            <img src="/webImages/1.png" height="66px" width="56px"/>
+                        </div>
+                        <!--首页-->
+                        <div class="layui-col-md2">
+                            <button class="layui-btn layui-btn-primary" onclick="loadIndex();">首页</button>
+                        </div>
+                        <!--搜索-->
+                        <div class="layui-col-md5">
+                            <input type="text" id="words" name="words" placeholder="请输入搜索内容" autocomplete="off" class="layui-input">
+                        </div>
+                        <!--提问-->
+                        <div class="layui-col-md3">
+                            <button class="layui-btn layui-btn-primary" onclick="search();">搜索</button>
+                            <button class="layui-btn layui-btn-normal" onclick="addQuestion();">提问</button>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-container">
+        <div  id="center" class="layui-row layui-col-space30">
+            <div class="layui-col-md8">
+                <div class="layui-row">
+                    <!--用户头像-->
+                    <div class="layui-col-md3">
+                        <img th:src="${user.imgAddr}" id="userHeadImg" name="file" class="userBigHead" />
+                    </div>
+                    <div class="layui-col-md9">
+                        <div class="layui-card" style="margin-top:50px">
+                            <!--用户昵称-->
+                            <div class="layui-card-header userNameBig">
+                                <p id="username" class="indexUserName" th:text="${user.userName}"></p>
+                            </div>
+                            <!--用户积分-->
+                            <div class="layui-card-body" style="height: 30px;display: inline-block">
+                                <div class="layui-row">
+                                    <p id="score" class="indexUserScore" ><span th:text="${user.score}"></span>积分</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="navigation"  class="layui-row layui-col-space10">
+                    <div class="layui-tab layui-tab-brief" lay-filter="navigations">
+                        <ul class="layui-tab-title  usernavtab">
+                            <li class="layui-this">
+                                <i class="layui-icon layui-icon-help"></i>&nbsp;我的提问
+                            </li>
+                            <li>
+                                <i class="layui-icon layui-icon-edit"></i>&nbsp;我的回答
+                            </li>
+                            <li>
+                                <i class="layui-icon layui-icon-read"></i>&nbsp;我的收藏
+                            </li>
+                            <li>
+                                <i class="layui-icon layui-icon-star-fill"></i>&nbsp;我的关注
+                            </li>
+                        </ul>
+                        <div class="layui-tab-content" style="padding: 20px 0 0 0">
+                            <div class="layui-tab-item layui-show">
+                                <div id="userQuestionsFrame" th:replace="question/userQuestion :: html"></div>
+                            </div>
+                            <div class="layui-tab-item">
+                                <div id="userAnswersFrame" th:replace="question/userAnswer :: html"></div>
+                            </div>
+                            <div class="layui-tab-item">
+                                <div id="userCollectionFrame" th:replace="question/myCollection.html :: html"></div>
+                            </div>
+                            <div class="layui-tab-item">
+                                <div id="userAttentionFrame" th:replace="question/myAttention.html :: html"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-col-md4">
+                <div class="layui-row">
+                    <!--最新问题-->
+                    <div class="layui-card" style="height: 400px;margin-top: 30px">
+                        <table class="layui-hide" id="newestQuestions" lay-filter="newQ"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<form id="form" method="post" action="">
+</form>
+
+
+<script>
+    // $(document).ready(
+    //     function() {
+    //         $("html").niceScroll();
+    //         $("#userQuestiosFrame").niceScroll({
+    //             styler:"fb",
+    //             cursorcolor:"#EAEAEA",
+    //             cursorwidth: '3',
+    //             cursorborderradius: '10px',
+    //             background: '#e4e4e4',
+    //             spacebarenabled:false,
+    //             cursorborder: '',
+    //             scrollspeed:40,
+    //             autohidemode:false
+    //         });
+    //     }
+    // );
+
+    layui.use('element', function(){
+        var element = layui.element;
+
+        // //监听导航tab切换
+        // element.on('tab(navigations)', function(data){
+        // });
+    });
+
+    layui.use('table', function(){
+        var table = layui.table;
+
+        //获取最新问题
+        getNewestQuestions(table);
+
+    });
+
+    // /**
+    //  * 重新加载NiceScroll滚动条
+    //  */
+    // // function resize(index) {
+    // //     if(0 == index){
+    // //         $("#userQuestiosFrame").getNiceScroll().resize();
+    // //     }else if(1 == index){
+    // //         $("#userAnswersFrame").getNiceScroll().resize();
+    // //     }
+    // // }
+
+    /**
+     * 头像上传
+     */
+    layui.use('upload', function(){
+        var upload = layui.upload;
+
+
+        //执行实例
+        var uploadInst = upload.render({
+            elem: '#userHeadImg',   //绑定元素
+            url: '/user/uploadUserHeadImg',               //上传接口
+            accept: 'images',       //只允许上传图片
+            acceptMime: 'image/*',  //只显示图片文件
+            field:"file",           //文件域字段名
+            size: 10240,            //10M
+            done: function(res){
+                layui.use('layer', function(){
+                    var layer = layui.layer;
+                    if(1 == res.code){
+                        $("#userHeadImg").attr("src", res.imgAddr);
+                        layer.msg(res.message);
+                    }else{
+                        layer.msg(res.message);
+                    }
+                });
+
+            },
+            error: function(){
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

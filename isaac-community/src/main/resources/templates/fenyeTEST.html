@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的社区</title>
+    <script src="https://cdn.bootcss.com/jquery/1.12.0/jquery.js"></script>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <script src="/layui/layui.js " type="text/javascript"></script>
+    <style>
+        #drop_area {
+            position: relative;
+            width: 220px;
+            height: 36px;
+            border: 1px dashed #ddd;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        #drop_area .text {
+            position: absolute;
+            width: 100%;
+            top: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+        #img_area {
+            width: 50px;
+        }
+        #img_area img {
+            width: 50px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div th:replace="nav :: html"></div>
+<div th:replace="head :: html"></div>
+
+<div class="layui-body" id="content_body">
+    <!-- 内容主体区域 -->
+    <div style="padding: 15px;">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>道具展示</legend>
+            <div class="layui-field-box">
+                <!-- 内容主体区域 -->
+                <div style="padding: 15px;">
+                    <div class="ctrlWrap">
+
+                        <form action="/item/showItem/1" method="get" accept-charset="utf-8" class="layui-form">
+
+                            <div class="layui-input-inline">
+                                <input type="text" class="layui-input" placeholder="道具名称/标签" name="itemNameOrTagName" th:value="${param.itemNameOrTagName}">
+                            </div>
+
+                            <div class="layui-input-inline">
+                                <select  name="typeName" >
+                                    <option value="" >类型</option>
+                                    <option value="被动道具">被动道具</option>
+                                    <option value="主动道具">主动道具</option>
+                                    <option value="跟班">跟班</option>
+                                    <option value="饰品">饰品</option>
+                                    <option value="卡牌">卡牌</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+
+                            <div class="layui-input-inline" style="width:200px">
+                                <button class="layui-btn layui-btn-small layui-btn-normal">
+                                    <i class="layui-icon">&#xe615;</i> 查询
+                                </button>
+                                <a href="/item/showAll/1" class="layui-btn layui-btn-normal layui-btn-small">
+                                    <i class="layui-icon" style="vertical-align:-3px;">&#x1002;</i> 重置
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+
+                    <div class="layui-input-inline" >
+                        <div id="drop_area" class="layui-input-inline">
+                            <div class="text"><span>+</span><span>将图片拖到此处，即可搜索</span></div>
+                        </div>
+                        <button type="button" class="layui-btn layui-btn-normal layui-btn-small" id="imgSelect">
+                            <i class="layui-icon">&#xe67c;</i>选择图片
+                        </button>
+                        <button type="button" class="layui-btn layui-btn-normal layui-btn-small" id="imgUpload2">
+                            <i class="layui-icon">&#xe615;</i>图片搜索
+                        </button>
+                    </div>
+                    <div id="img_area" class="layui-input-inline"></div>
+
+
+
+                    <!-- 道具列表 -->
+                    <table id="dictTable" lay-even class="layui-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>名称</th>
+                            <th>图标</th>
+                            <th>效果</th>
+                            <th>类型</th>
+                            <th>标签</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="dictTableBody">
+
+                        </tbody>
+                    </table>
+
+                    <div id="fenye"></div>
+
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>
+
+</body>
+
+<script th:inline="javascript">
+
+    layui.use(['form','upload', 'laypage', 'layer'], function(){
+        var form = layui.form;
+        var upload = layui.upload;
+        var laypage = layui.laypage;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+
+
+        //执行实例
+        var uploadInst = upload.render({
+            elem: '#imgSelect' //绑定元素
+            ,url: '/item/imgSelect' //上传接口
+            ,size:5*1024
+            ,method:'post'
+            ,multiple: true
+            ,accept: 'file'
+            ,auto: false
+            ,bindAction: '#imgUpload2'
+            ,choose: function(obj){
+                debugger;
+                var files = obj.pushFile(); //将每次选择的文件追加到文件队列
+
+                //图像预览，如果是多文件，会逐个添加。(不支持ie8/9)
+
+                obj.preview(function(index, file, result){
+
+                    var imgobj = new Image(); //创建新img对象
+
+                    imgobj.src = result; //指定数据源
+
+                    imgobj.className = 'thumb';
+
+
+
+                    document.getElementById("img_area").appendChild(imgobj); //添加到预览区域
+
+                });
+
+            }
+            ,done: function(res, index){
+                if(res.length > 0){
+                    $('#dictTable tr:gt(0)').remove();//删除之前的数据     dictTable是html中table的id
+                    var code1 = "";
+                    var codeMid = "";
+                    var code2 = "";
+                    var code = "";
+                    $.each(res,function(i,item){
+                        code1 = "<tr><td align=\"center\">"+item['id']+"</td>\n" +
+                            "       <td align=\"center\">"+item['name']+"</td>\n" +
+                            "       <td align=\"center\">\n" +
+                            "       <img src="+item['imgAddr']+" width=\"48px\" height=\"48px\" data-file-width=\"32px\" data-file-height=\"32px\">\n" +
+                            "       </td>\n" +
+                            "       <td align=\"center\" ><div style=\"width:170px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;\">"+item['description']+"</div></td>\n" +
+                            "       <td align=\"center\">"+item['typeName']+"</td>\n"+
+                            "       <td align=\"center\">\n";
+                        $.each(item['tags'],function (j,tag) {
+                            codeMid += "<a href='/item/tagSelect/1?tagName="+tag['name']+"' align=\"center\" " +
+                                "class=\"layui-btn layui-btn-radius layui-btn-danger layui-btn-mini\">"+tag['name']+"</a>";
+                        });
+                        code2 = "    </td>\n" +
+                            "    <td align=\"center\">\n" +
+                            "    <button data-method=\"detail\" name='"+item['name']+"' description='"+item['description']+"' class=\"layui-btn layui-btn-normal layui-btn-mini\">详情</button>\n" +
+                            "    </td></tr>";
+                        code = code1 + codeMid + code2;
+                        $("#dictTableBody").append(code);
+                        codeMid = "";
+                    });
+                    $("#fenye").hide();
+                }else{
+                    $('#dictTable tr:gt(0)').remove();//删除之前的数据
+                }
+
+            }
+            ,error: function(){
+                //请求异常回调
+                alert("上传失败！");
+            }
+        });
+
+
+
+        var itemList = [[${items}]];
+        var nums = 10; //每页出现的数据量
+        //调用分页
+        laypage.render({
+            elem: 'fenye'
+            ,count: Math.ceil(itemList.length/nums) //得到总页数
+            ,groups: 5 //连续显示分页数
+            ,limit: 1
+            ,jump: function(obj){
+                var thisData = itemList.concat().splice(obj.curr*nums-nums, nums);
+                if(thisData.length > 0){
+                    $('#dictTable tr:gt(0)').remove();//删除之前的数据     dictTable是html中table的id
+                    var code1 = "";
+                    var codeMid = "";
+                    var code2 = "";
+                    var code = "";
+                    $.each(thisData,function(i,item){
+                        code1 = "<tr><td align=\"center\">"+item['id']+"</td>\n" +
+                            "       <td align=\"center\">"+item['name']+"</td>\n" +
+                            "       <td align=\"center\">\n" +
+                            "       <img src="+item['imgAddr']+" width=\"48px\" height=\"48px\" data-file-width=\"32px\" data-file-height=\"32px\">\n" +
+                            "       </td>\n" +
+                            "       <td align=\"center\" ><div style=\"width:170px; height: 60px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;\">"+item['description']+"</div></td>\n" +
+                            "       <td align=\"center\">"+item['typeName']+"</td>\n"+
+                            "       <td align=\"center\">\n";
+                        $.each(item['tags'],function (j,tag) {
+                            codeMid += "<a href='/item/tagSelect/1?tagName="+tag['name']+"' align=\"center\" " +
+                                "class=\"layui-btn layui-btn-radius layui-btn-danger layui-btn-mini\">"+tag['name']+"</a>";
+                        });
+                        code2 = "    </td>\n" +
+                            "    <td align=\"center\">\n" +
+                            "    <button data-method=\"detail\" name='"+item['name']+"' description='"+item['description']+"' class=\"layui-btn layui-btn-normal layui-btn-mini\">详情</button>\n" +
+                            "    </td></tr>";
+                        code = code1 + codeMid + code2;
+                        $("#dictTableBody").append(code);
+                        codeMid = "";
+                    });
+
+                }
+            }
+        });
+
+        //触发事件
+        var active = {
+            detail: function (e) {
+                var data1 = $(e).attr("name");
+                var data2 = $(e).attr("description");
+                //多窗口模式，层叠置顶
+                layer.open({
+                    type: 1
+                    , title: data1
+                    , area: '500px'
+                    , shade: 0.8
+                    , maxmin: true
+                    , offset:  'auto'
+                    , content: '<div style="padding: 50px; line-height: 22px; background-color: #393D49; color: #fff; font-weight: 300;">'+data2+'</div>'
+                    , btn: ['关闭']
+                    , yes: function () {
+                        layer.closeAll();
+                    }
+
+                    , zIndex: layer.zIndex //重点1
+                    , success: function (layero) {
+                        layer.setTop(layero); //重点2
+                    }
+                });
+            }
+        };
+
+        $(document).on('click','.layui-btn', function(){
+            var othis = $(this), method = othis.data('method');
+            active[method] ? active[method].call(this, othis) : '';
+        });
+
+    });
+
+
+
+    var dp = document.getElementById('drop_area');
+    dp.addEventListener('dragover', function(e) {
+        e.stopPropagation();
+        //阻止浏览器默认打开文件的操作
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    });
+
+    //单图上传
+    dp.addEventListener("drop", function(e) {
+        e.stopPropagation();
+        //阻止浏览器默认打开文件的操作
+        e.preventDefault();
+        var files = e.dataTransfer.files;
+        var file = files[0];
+        var formData = new FormData();
+        formData.append("file", file);
+        $.ajax({
+            type: 'post',
+            url: '/item/imgSelect',
+            data: formData,
+            contentType: false, //必须  禁止jQuery设置Content-Type请求头
+            processData: false, //必须  禁止jQuery处理发送的数据
+            dataType: "json",
+            success: function (res) {
+                if(res.length > 0){
+                    $('#dictTable tr:gt(0)').remove();//删除之前的数据     dictTable是html中table的id
+                    var code1 = "";
+                    var codeMid = "";
+                    var code2 = "";
+                    var code = "";
+                    $.each(res,function(i,item){
+                        code1 = "<tr><td align=\"center\">"+item['id']+"</td>\n" +
+                            "       <td align=\"center\">"+item['name']+"</td>\n" +
+                            "       <td align=\"center\">\n" +
+                            "       <img src="+item['imgAddr']+" width=\"48px\" height=\"48px\" data-file-width=\"32px\" data-file-height=\"32px\">\n" +
+                            "       </td>\n" +
+                            "       <td align=\"center\" ><div style=\"width:170px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;\">"+item['description']+"</div></td>\n" +
+                            "       <td align=\"center\">"+item['typeName']+"</td>\n"+
+                            "       <td align=\"center\">\n";
+                        $.each(item['tags'],function (j,tag) {
+                            codeMid += "<a href='/item/tagSelect/1?tagName="+tag['name']+"' align=\"center\" " +
+                                "class=\"layui-btn layui-btn-radius layui-btn-danger layui-btn-mini\">"+tag['name']+"</a>";
+                        });
+                        code2 = "    </td>\n" +
+                            "    <td align=\"center\">\n" +
+                            "    <button data-method=\"detail\" name='"+item['name']+"' description='"+item['description']+"' class=\"layui-btn layui-btn-normal layui-btn-mini\">详情</button>\n" +
+                            "    </td></tr>";
+                        code = code1 + codeMid + code2;
+                        $("#dictTableBody").append(code);
+                        $(".fenyeWrap").hide();
+                    });
+
+                }else{
+                    $('#dictTable tr:gt(0)').remove();//删除之前的数据
+                }
+            },
+            error: function (e) {
+                alert("上传失败！");
+            },
+        });
+    });
+
+</script>
+</html>

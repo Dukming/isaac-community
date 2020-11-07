@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的后台</title>
+    <script src="https://cdn.bootcss.com/jquery/1.12.0/jquery.js"></script>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <script src="/layui/layui.js " type="text/javascript"></script>
+</head>
+
+<body>
+
+<div th:replace="adminNav :: html"></div>
+<div th:replace="head :: html"></div>
+
+<div class="layui-body" id="content_body">
+    <!-- 内容主体区域 -->
+    <div style="padding: 15px;">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>后台道具展示</legend>
+            <div class="layui-field-box">
+                <!-- 内容主体区域 -->
+                <div style="padding: 15px;">
+                    <div class="ctrlWrap">
+
+                        <form action="/adminItem/showItem" method="get" accept-charset="utf-8" class="layui-form">
+
+                            <div class="layui-input-inline">
+                                <input type="text" class="layui-input" placeholder="道具名称/标签" name="itemNameOrTagName" th:value="${param.itemNameOrTagName}">
+                            </div>
+
+                            <div class="layui-input-inline">
+                                <select  name="typeName" >
+                                    <option value="" >类型</option>
+                                    <option value="被动道具">被动道具</option>
+                                    <option value="主动道具">主动道具</option>
+                                    <option value="跟班">跟班</option>
+                                    <option value="饰品">饰品</option>
+                                    <option value="卡牌">卡牌</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+
+                            <div class="layui-input-inline" style="width:200px">
+                                <button class="layui-btn layui-btn-small layui-btn-normal">
+                                    <i class="layui-icon">&#xe615;</i> 查询
+                                </button>
+                                <a href="/adminItem/showAll" class="layui-btn layui-btn-normal layui-btn-small">
+                                    <i class="layui-icon" style="vertical-align:-3px;">&#x1002;</i> 重置
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+
+
+                    <!-- 道具列表 -->
+                    <table id="dictTable" lay-even class="layui-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>名称</th>
+                            <th>图标</th>
+                            <th>效果</th>
+                            <th>类型</th>
+                            <th>标签</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="dictTableBody">
+
+
+                        </tbody>
+                    </table>
+
+                    <div id="fenye"></div>
+
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>
+
+</body>
+
+<script th:inline="javascript">
+
+    layui.use(['form','upload', 'laypage', 'layer'], function(){
+        var form = layui.form;
+        var upload = layui.upload;
+        var laypage = layui.laypage;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+
+
+
+
+
+        var itemList = [[${items}]];
+        var nums = 10; //每页出现的数据量
+        //调用分页
+        laypage.render({
+            elem: 'fenye'
+            ,count: Math.ceil(itemList.length/nums) //得到总页数
+            ,groups: 5 //连续显示分页数
+            ,limit: 1
+            ,jump: function(obj){
+                var thisData = itemList.concat().splice(obj.curr*nums-nums, nums);
+                if(thisData.length > 0){
+                    $('#dictTable tr:gt(0)').remove();//删除之前的数据     dictTable是html中table的id
+                    var code1 = "";
+                    var codeMid = "";
+                    var code2 = "";
+                    var code = "";
+                    $.each(thisData,function(i,item){
+                        code1 = "<tr><td align=\"center\">"+item['id']+"</td>\n" +
+                            "       <td align=\"center\">"+item['name']+"</td>\n" +
+                            "       <td align=\"center\">\n" +
+                            "       <img src="+item['imgAddr']+" width=\"48px\" height=\"48px\" data-file-width=\"32px\" data-file-height=\"32px\">\n" +
+                            "       </td>\n" +
+                            "       <td align=\"center\" ><div style=\"width:170px; height: 60px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;\">"+item['description']+"</div></td>\n" +
+                            "       <td align=\"center\">"+item['typeName']+"</td>\n"+
+                            "       <td align=\"center\">\n";
+                        $.each(item['tags'],function (j,tag) {
+                            codeMid += "<a href='/adminItem/tagSelect?tagName="+tag['name']+"' align=\"center\" " +
+                                "class=\"layui-btn layui-btn-radius layui-btn-danger layui-btn-mini\">"+tag['name']+"</a>";
+                        });
+                        code2 = "    </td>\n" +
+                            "    <td align=\"center\">\n" +
+                            "    <button data-method=\"detail\" name='"+item['name']+"' description='"+item['description']+"' class=\"layui-btn layui-btn-normal layui-btn-mini\">详情</button>\n" +
+                            "    <a href = '/adminItem/edit?id="+item['id']+"'><input type=\"button\"  class=\"layui-btn layui-btn-normal layui-btn-mini\" value=\"编辑\"/></a>"+
+                            "    </td></tr>";
+                        code = code1 + codeMid + code2;
+                        $("#dictTableBody").append(code);
+                        codeMid = "";
+                    });
+
+                }
+            }
+        });
+
+        //触发事件
+        var active = {
+            detail: function (e) {
+                var data1 = $(e).attr("name");
+                var data2 = $(e).attr("description");
+                //多窗口模式，层叠置顶
+                layer.open({
+                    type: 1
+                    , title: data1
+                    , area: '500px'
+                    , shade: 0.8
+                    , maxmin: true
+                    , offset:  'auto'
+                    , content: '<div style="padding: 50px; line-height: 22px; background-color: #393D49; color: #fff; font-weight: 300;">'+data2+'</div>'
+                    , btn: ['关闭']
+                    , yes: function () {
+                        layer.closeAll();
+                    }
+
+                    , zIndex: layer.zIndex //重点1
+                    , success: function (layero) {
+                        layer.setTop(layero); //重点2
+                    }
+                });
+            }
+        };
+
+        $(document).on('click','.layui-btn', function(){
+            var othis = $(this), method = othis.data('method');
+            active[method] ? active[method].call(this, othis) : '';
+        });
+
+    });
+
+</script>
+</html>

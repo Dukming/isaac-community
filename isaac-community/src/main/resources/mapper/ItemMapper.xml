@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dkm.isaaccommunity.dao.ItemDao">
+
+    <resultMap type="Item" id="ItemMap">
+        <id column="id" property="id"/>
+        <result column="item_name" property="name"/>
+        <result column="name_img" property="imgName"/>
+        <result column="description" property="description"/>
+        <result column="type_name" property="typeName"/>
+        <collection property="tags" ofType="Tag">
+            <id column="tag_id" property="id"/>
+            <result column="tag_name" property="name"/>
+        </collection>
+    </resultMap>
+
+    <select id="getItem" parameterType="int" resultMap="ItemMap">
+        SELECT i.id, i.name item_name,  name_img, description, type_name, t.id tag_id, t.name tag_name
+        FROM (SELECT  * FROM  item  WHERE id = #{id}) i
+        LEFT JOIN item_tag it ON i.id = it.item_id
+	    LEFT JOIN tag t ON t.id = it.tag_id
+    </select>
+
+    <select id="selectAllItem" resultMap="ItemMap">
+        SELECT i.id, i.name item_name,  name_img, description, type_name, t.id tag_id, t.name tag_name
+        FROM item i
+        LEFT JOIN item_tag it ON i.id = it.item_id
+	    LEFT JOIN tag t ON t.id = it.tag_id
+    </select>
+
+    <select id="selectItemByNameAndType" resultMap="ItemMap">
+        SELECT i.id, i.name item_name,  name_img, description, type_name, t.id tag_id, t.name tag_name
+        FROM item i
+        LEFT JOIN item_tag it ON i.id = it.item_id
+	    LEFT JOIN tag t ON t.id = it.tag_id
+	    WHERE 1=1
+        <if test="itemName != null and itemName !='' ">
+            AND ( i.name LIKE concat('%', #{itemName}, '%') OR t.name LIKE concat('%', #{tagName}, '%') )
+        </if>
+        <if test="typeName != null and typeName !='' ">
+            AND type_name = #{typeName}
+        </if>
+    </select>
+
+    <select id="selectItemByImgName" resultMap="ItemMap">
+        SELECT i.id, i.name item_name,  name_img, description, type_name, t.id tag_id, t.name tag_name
+        FROM item i
+        LEFT JOIN item_tag it ON i.id = it.item_id
+        LEFT JOIN tag t ON t.id = it.tag_id
+        WHERE name_img = #{imgName}
+    </select>
+
+    <select id="selectItemByTagName" resultMap="ItemMap">
+        SELECT i.id, i.name item_name,  name_img, description, type_name, t.id tag_id, t.name tag_name
+        FROM item i
+        LEFT JOIN item_tag it ON i.id = it.item_id
+        LEFT JOIN tag t ON t.id = it.tag_id
+        WHERE t.name LIKE concat('%', #{name}, '%')
+    </select>
+
+    <update id="updateItem" parameterType="Item">
+        UPDATE item SET name=#{name},name_img=#{imgName},
+        description=#{description},type_name=#{typeName}
+        WHERE id=#{id}
+    </update>
+
+    <insert id="insertItem" parameterType="Item" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO item(name, name_img, description, type_name) VALUES (#{name},#{imgName},#{description},#{typeName})
+    </insert>
+
+</mapper>

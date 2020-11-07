@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dkm.isaaccommunity.dao.ErrorMessageDao">
+
+    <resultMap type="ErrorMessage" id="ErrorMessageMap">
+        <id column="id" property="id"/>
+        <result column="content" property="content"/>
+        <result column="deal" property="deal"/>
+        <result column="createtime" property="createTime"/>
+        <association property="user"  javaType="User">
+            <id column="user_id" property="id"/>
+            <result column="username" property="userName"/>
+            <result column="password" property="password"/>
+            <result column="phone" property="phone"/>
+            <result column="createtime" property="createTime"/>
+            <result column="locked" property="locked"/>
+            <result column="salt" property="salt"/>
+            <result column="score" property="score"/>
+            <result column="role" property="role"/>
+            <result column="head_img_name" property="imgName"/>
+        </association>
+    </resultMap>
+
+    <insert id="insertErrorMSG" parameterType="ErrorMessage" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO error(content, user_id, createtime) VALUES (#{content},#{user.id},#{createTime})
+    </insert>
+
+    <select id="selectNotProcessedMSGByPage" resultMap="ErrorMessageMap">
+        SELECT
+            E.*,
+            U.id,
+            U.username,
+            U.head_img_name
+        FROM
+            error  E
+        LEFT JOIN
+            user   U
+        ON
+            E.user_id = U.id
+        WHERE
+            deal = 0
+        LIMIT
+            #{pageInfo.start}, #{pageInfo.pageSize}
+    </select>
+
+    <select id="selectNotProcessedMSGCount" resultType="int">
+        SELECT COUNT(E.id) FROM error E WHERE deal = 0
+    </select>
+
+    <select id="selectProcessedMSGByPage" resultMap="ErrorMessageMap">
+        SELECT
+            E.*,
+            U.id,
+            U.username,
+            U.head_img_name
+        FROM
+            error  E
+        LEFT JOIN
+            user   U
+        ON
+            E.user_id = U.id
+        WHERE
+            deal = 1
+        ORDER BY
+            E.id DESC
+        LIMIT
+            #{pageInfo.start}, #{pageInfo.pageSize}
+    </select>
+
+    <select id="selectProcessedMSGCount" resultType="int">
+        SELECT COUNT(E.id) FROM error E WHERE deal = 1
+    </select>
+
+    <update id="signMessageToProcessed" >
+        UPDATE error SET deal = 1 WHERE id = #{id}
+    </update>
+
+</mapper>

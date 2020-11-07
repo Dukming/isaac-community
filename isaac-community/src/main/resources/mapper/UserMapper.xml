@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dkm.isaaccommunity.dao.UserDao">
+
+    <resultMap type="User" id="UserMap">
+        <id column="id" property="id"/>
+        <result column="username" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="phone" property="phone"/>
+        <result column="createtime" property="createTime"/>
+        <result column="locked" property="locked"/>
+        <result column="salt" property="salt"/>
+        <result column="score" property="score"/>
+        <result column="role" property="role"/>
+        <result column="head_img_name" property="imgName"/>
+    </resultMap>
+
+    <select id="getUser" parameterType="int" resultMap="UserMap">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+
+    <select id="getUserByPhone" resultMap="UserMap">
+		SELECT * FROM user  WHERE phone = #{phone}
+	</select>
+
+    <update id="increaseUserScore">
+        UPDATE user SET score = score + #{score} WHERE id = #{userID}
+    </update>
+
+    <update id="decreaseUserScore">
+        UPDATE user SET score = score - #{score} WHERE id = #{userID}
+    </update>
+
+    <update id="updateHeadImg">
+        UPDATE user SET head_img_name = #{imgName} WHERE id = #{userID}
+    </update>
+
+    <insert id="insertUser">
+        INSERT INTO user(username,password,phone,createtime,salt)
+        values(#{user.userName},#{newPassword},#{user.phone},#{user.createTime},#{user.salt})
+    </insert>
+
+</mapper>

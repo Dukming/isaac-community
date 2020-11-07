@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dkm.isaaccommunity.dao.ArticleDao">
+
+    <resultMap type="Article" id="ArticleMap">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="url" property="url"/>
+        <result column="createtime" property="createTime"/>
+    </resultMap>
+
+    <insert id="insertArticle" parameterType="Article" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO article(title, description, url, createtime) VALUES (#{title},#{description},#{url},#{createTime})
+    </insert>
+
+    <select id="selectAllArticles" resultMap="ArticleMap">
+        SELECT * FROM article
+    </select>
+
+    <select id="selectArticleById" parameterType="int" resultMap="ArticleMap">
+        SELECT * FROM article WHERE id = #{id}
+    </select>
+
+    <update id="updateArticle" parameterType="Article">
+        UPDATE article SET title=#{title}, description=#{description}, url=#{url} WHERE id=#{id}
+    </update>
+
+    <delete id="deleteArticle" parameterType="int">
+        DELETE FROM article WHERE id=#{id}
+    </delete>
+
+</mapper>

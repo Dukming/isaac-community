@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的后台</title>
+    <script src="https://cdn.bootcss.com/jquery/1.12.0/jquery.js"></script>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <script src="/layui/layui.js " type="text/javascript"></script>
+</head>
+<body>
+
+<div th:replace="adminNav :: html"></div>
+<div th:replace="head :: html"></div>
+
+<div class="layui-body" id="content_body">
+    <!-- 内容主体区域 -->
+    <div style="padding: 15px;">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>后台文章发布</legend>
+            <div class="layui-field-box">
+                <!-- 内容主体区域 -->
+                <div style="padding: 15px;">
+                    <div class="ctrlWrap">
+
+                        <form action="/adminArticle/editArticle" method="post" accept-charset="utf-8" class="layui-form" >
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">ID</label>
+                                <div class="layui-input-block">
+                                    <input style="width: 400px" type="text" name="id" required  lay-verify="required" th:value="${article.id}" autocomplete="off" class="layui-input" readonly/>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">文章链接</label>
+                                <div class="layui-input-block">
+                                    <input style="width: 400px" type="text" name="url" required  lay-verify="required"  th:value="${article.url}" placeholder="请输入文章URL" autocomplete="off" class="layui-input"/>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">文章标题</label>
+                                <div class="layui-input-block">
+                                    <input style="width: 400px" type="text" name="title" required  lay-verify="required"  th:value="${article.title}" placeholder="请输入文章标题" autocomplete="off" class="layui-input"/>
+                                </div>
+                            </div>
+
+
+                            <div class="layui-form-item layui-form-text">
+                                <label class="layui-form-label">描述补充</label>
+                                <div class="layui-input-block">
+                                    <textarea style="width: 600px; height: 250px" id="description" th:text="${article.description}" placeholder="请输入需要补充的文章描述" name="description" class="layui-textarea"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button class="layui-btn" lay-submit lay-filter="formDemo">确定</button>
+                                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+</div>
+
+</body>
+
+<script th:inline="javascript">
+
+    layui.use(['form'], function(){
+        var form = layui.form;
+
+
+    });
+
+</script>
+
+</html>

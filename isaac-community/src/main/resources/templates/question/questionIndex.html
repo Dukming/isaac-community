@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的社区</title>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+    <link rel="stylesheet" href="/css/questionIndex.css"/>
+</head>
+<body>
+
+    <div th:replace="nav :: html"></div>
+    <div th:replace="head :: html"></div>
+
+
+    <div class="layui-body" id="content_body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend>后台文章列表</legend>
+                <div class="layui-field-box">
+                    <!-- 内容主体区域 -->
+                    <div style="padding: 15px;">
+                        <div class="layui-card" style="padding-top: 20px">
+                            <div class="layui-container">
+                                <div id="header" class="layui-row layui-col-space30">
+                                    <!--左侧内容区-->
+                                    <div class="layui-col-md8">
+                                        <div class="layui-row layui-col-space10">
+                                            <!--标志-->
+                                            <div class="layui-col-md2">
+                                                <img src="/webImages/1.png" height="66px" width="56px"/>
+                                            </div>
+                                            <!--首页-->
+                                            <div class="layui-col-md2">
+                                                <button class="layui-btn layui-btn-primary" onclick="loadIndex();">首页</button>
+                                            </div>
+                                            <!--搜索-->
+                                            <div class="layui-col-md5">
+                                                <input type="text" id="words" name="words" placeholder="请输入搜索内容" autocomplete="off" class="layui-input">
+                                            </div>
+                                            <!--提问-->
+                                            <div class="layui-col-md3">
+                                                <button class="layui-btn layui-btn-primary" onclick="search();">搜索</button>
+                                                <button class="layui-btn layui-btn-normal" onclick="addQuestion();">提问</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--右侧内容区-->
+                                    <div class="layui-col-md4">
+                                        <!--个人信息-->
+                                        <div id="userinfo"  class="layui-row layui-col-space20">
+                                            <div class="layui-col-md2">
+                                                <img th:src="${user.imgAddr}" id="userHeadImg" name="file" class="userMiddleHead" onclick="showUserPage();"/>
+                                            </div>
+
+                                            <div class="layui-col-md10">
+                                                <div  class="layui-row">
+                                                    <div class="layui-col-md10" onclick="showUserPage();">
+                                                        <div class="layui-card">
+                                                            <div class="layui-card-header" style="height: 20px;line-height: 20px;">
+                                                                <p id="username" class="indexUserName" th:text="${user.userName}"></p>
+                                                            </div>
+                                                            <div class="layui-card-body" style="padding-top:5px;padding-bottom: 0; line-height: 20px;">
+                                                                <p id="score" class="indexUserScore" ><span th:text="${user.score}"></span>积分</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-col-md2">
+                                                        <button class="layui-btn layui-btn-primary layui-btn-sm" style="margin-top: 20px" onclick="logout();">退出</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-container">
+                            <div  id="center" class="layui-row layui-col-space30">
+                                <div class="layui-col-md8">
+                                    <!--导航选项卡-->
+                                    <div id="navigation"  class="layui-row layui-col-space10">
+                                        <div class="layui-tab layui-tab-brief" lay-filter="navigations">
+                                            <ul class="layui-tab-title  navtab">
+                                                <li class="layui-this">
+                                                    <i class="layui-icon layui-icon-fire"></i> &nbsp;热门回答
+                                                </li>
+                                                <li>
+                                                    <i class="layui-icon layui-icon-survey"></i>&nbsp;最新问题
+                                                </li>
+                                                <li>
+                                                    <i class="layui-icon layui-icon-help"></i>&nbsp;我的提问
+                                                </li>
+                                                <li>
+                                                    <i class="layui-icon layui-icon-edit"></i>&nbsp;我的回答
+                                                </li>
+                                                <li>
+                                                    <i class="layui-icon layui-icon-read"></i>&nbsp;我的收藏
+                                                </li>
+                                                <li>
+                                                    <i class="layui-icon layui-icon-star-fill"></i>&nbsp;我的关注
+                                                </li>
+                                            </ul>
+                                            <div class="layui-tab-content" style="padding: 20px 0 0 0">
+                                                <div class="layui-tab-item layui-show">
+                                                    <div id="hotQuestionsFrame" th:replace="question/hotQuestion :: html"></div>
+                                                </div>
+                                                <div class="layui-tab-item">
+                                                    <div id="newestQuestionsFrame" th:replace="question/newQuestion :: html"></div>
+                                                </div>
+                                                <div class="layui-tab-item">
+                                                    <div id="userQuestionsFrame" th:replace="question/userQuestion :: html"></div>
+                                                </div>
+                                                <div class="layui-tab-item">
+                                                    <div id="userAnswersFrame" th:replace="question/userAnswer :: html"></div>
+                                                </div>
+                                                <div class="layui-tab-item">
+                                                    <div id="userCollectionFrame" th:replace="question/myCollection.html :: html"></div>
+                                                </div>
+                                                <div class="layui-tab-item">
+                                                    <div id="userAttentionFrame" th:replace="question/myAttention.html :: html"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="layui-col-md4">
+
+                                    <div class="layui-row">
+                                        <div class="layui-card" style="height: 200px;width: 100%">
+                                            <table class="layui-table">
+                                                <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <i class="layui-icon layui-icon-read" style="font-size: 25px; color: #77839c;"></i>
+                                                        &nbsp;&nbsp;我的收藏
+                                                    </td>
+                                                    <td class="td_text">
+                                                        <span class="layui-badge layui-bg-gray" th:text="${collectionCount}"></span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <i class="layui-icon layui-icon-star-fill" style="font-size: 25px; color: #77839c;"></i>
+                                                        &nbsp;&nbsp;我的关注
+                                                    </td>
+                                                    <td class="td_text">
+                                                        <span class="layui-badge layui-bg-gray" th:text="${attentionCount}"></span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <i class="layui-icon" style="font-size: 25px; color: #77839c;">&#xe6c6</i>
+                                                        &nbsp;&nbsp;我的点赞
+                                                    </td>
+                                                    <td class="td_text">
+                                                        <span class="layui-badge layui-bg-gray" th:text="${user.score}/10"></span>
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="layui-row">
+                                        <!--最新问题-->
+                                        <div class="layui-card" style="height: 400px;margin-top: 30px">
+                                            <table class="layui-hide" id="newestQuestions" lay-filter="newQ"></table>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="form" method="post" action="">
+                        </form>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+
+    </div>
+
+
+
+
+</body>
+
+<script >
+
+    layui.use(['table'], function(){
+        var table = layui.table;
+        //获取最新问题
+        getNewestQuestions(table);
+
+    });
+
+    layui.use('element', function(){
+        var element = layui.element;
+
+    });
+
+
+    /**
+     * 刷新页面
+     */
+    function refresh() {
+        getNewestQuestions(layui.table);
+    }
+
+</script>
+
+</html>

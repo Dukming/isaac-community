@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+    <title>以撒的社区</title>
+    <link rel="stylesheet" href="/layui/css/layui.css"  media="all">
+</head>
+<body>
+<div th:replace="head :: html"></div>
+<!--热门问题相关信息-->
+<ul class="flow-default" id="searchRes"></ul>
+
+<script th:inline="javascript">
+    var searchResult = [[${result}]];
+    var code = "";
+    $.each(searchResult,function (index, item) {
+        code = '<div class="layui-card">' +
+                    '<div class="layui-card-header userHeadParentElement" >' +
+                        '<img src="' + item.hotuserheadimg + '" class="userSmallHead"/>' +
+                        '<a class="userName">' + item.hotusername + '</a>' +
+                    '</div>' +
+                    '<div class="layui-card-body">' +
+                        '<div class="layui-row questionDetailTitle" onclick="showQuestionDetail(' + item.id + ');">' +
+                            item.title +
+                        '</div>' +
+                        '<div class="layui-row questionDetailText"  onclick="showQuestionDetail(' + item.id + ');">' +
+                            '问题描述：' + item.description +
+                        '</div>' +
+                        '<div class="layui-row hotanwer">' +
+                            item.hotanswer +
+                        '</div>' +
+                    '</div>' +
+                '</div>'
+
+        $("#searchRes").append(code);
+    });
+</script>
+</body>
+</html>
